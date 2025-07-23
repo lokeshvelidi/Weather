@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Live Weather Search</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body, html {
+      height: 100%;
+    }
+    .video-bg {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      z-index: -1;
+      opacity: 0.7;
+    }
+    .overlay {
+      background-color: rgba(255, 255, 255, 0.3);
+      backdrop-filter: blur(4px);
+    }
+  </style>
+</head>
+<body class="text-gray-800">
+
+  <!-- Video Background -->
+  <video autoplay muted loop class="video-bg">
+    <source src="background.mp4" type="video/mp4">
+    Your browser does not support the video tag.
+  </video>
+
+  <!-- Main Content -->
+  <div class="overlay min-h-screen flex flex-col justify-center items-center p-6">
+    <h1 class="text-4xl font-bold mb-8 text-blue-900 drop-shadow-lg">🌤️ Live Weather Search</h1>
+
+    <!-- Search Bar -->
+    <div class="flex mb-8">
+      <input
+        type="text"
+        id="searchInput"
+        placeholder="Enter city name"
+        class="w-72 p-3 border border-gray-300 rounded-l-lg focus:outline-none bg-white bg-opacity-80"
+      />
+      <button
+        onclick="searchWeather()"
+        class="bg-blue-600 text-white px-4 rounded-r-lg hover:bg-blue-700"
+      >
+        Search
+      </button>
+    </div>
+
+    <!-- Result -->
+    <div id="weatherResult" class="text-center"></div>
+  </div>
+
+  <!-- JavaScript -->
+  <script>
+    const apiKey = "a791474408cb815397a3d3f1be993ea7"; // Your actual API key
+
+    async function searchWeather() {
+      const city = document.getElementById("searchInput").value.trim();
+      const resultContainer = document.getElementById("weatherResult");
+      resultContainer.innerHTML = "";
+
+      if (!city) {
+        resultContainer.innerHTML = `<p class="text-red-600 font-medium text-center">Please enter a city name.</p>`;
+        return;
+      }
+
+      try {
+        const response = await fetch(
+          `https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${apiKey}&units=metric`
+        );
+        const data = await response.json();
+
+        if (data.cod !== 200) {
+          resultContainer.innerHTML = `<p class="text-red-600 font-medium text-center">${data.message}</p>`;
+          return;
+        }
+
+        const card = document.createElement("div");
+        card.className = "bg-white bg-opacity-80 rounded-2xl shadow-md p-6 w-80 text-center";
+
+        card.innerHTML = `
+          <h2 class="text-xl font-semibold text-gray-800">${data.name}</h2>
+          <p class="text-gray-600 capitalize">${data.weather[0].description}</p>
+          <p class="text-4xl font-bold text-blue-700 mt-2">${data.main.temp}°C</p>
+          <p class="text-sm text-gray-500 mt-1">Humidity: ${data.main.humidity}%</p>
+          <p class="text-sm text-gray-500">Wind: ${data.wind.speed} m/s</p>
+        `;
+
+        resultContainer.appendChild(card);
+      } catch (error) {
+        console.error(error);
+        resultContainer.innerHTML = `<p class="text-red-600 font-medium text-center">Error fetching data.</p>`;
+      }
+    }
+  </script>
+
+</body>
+</html>
